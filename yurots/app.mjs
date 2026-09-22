@@ -2,6 +2,7 @@ import { Assets76 } from "./assets.mjs";
 import { Protocol76, key, moves } from "./protocol76.mjs";
 import { Writer, loginPacket, gamePacket, readLogin } from "./bytes.mjs";
 import { Renderer76 } from "./renderer.mjs";
+import { HunteraHUD } from "./hud.mjs";
 const $ = (id) => document.getElementById(id),
   assets = new Assets76(),
   renderer = new Renderer76($("screen"), assets);
@@ -15,6 +16,13 @@ let protocol = null,
   path = [],
   movementAt = 0,
   noticeTimer;
+const hud = new HunteraHUD({
+  assets,
+  send,
+  notice,
+  getProtocol: () => (ready ? protocol : null),
+  focusGame: () => $("screen").focus(),
+});
 const held = new Set(),
   messages = [],
   errors = [];
@@ -61,7 +69,25 @@ function log(message) {
   messages.push(text);
   if (messages.length > 150) messages.shift();
   const div = document.createElement("div");
-  div.textContent = text;
+  div.className = `chat-message${typeof message === "string" || !message.name ? " message-system" : ""}`;
+  const time = document.createElement("time");
+  time.className = "message-time";
+  time.textContent = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  div.append(time);
+  if (typeof message !== "string" && message.name) {
+    const author = document.createElement("span");
+    author.className = "message-author";
+    author.textContent = `${message.name}: `;
+    div.append(author);
+  }
+  const body = document.createElement("span");
+  body.className = "message-text";
+  body.textContent = typeof message === "string" ? message : message.text;
+  div.append(body);
   $("messages").append(div);
   if ($("messages").children.length > 150) $("messages").firstChild.remove();
   $("messages").scrollTop = $("messages").scrollHeight;
@@ -86,6 +112,8 @@ function fail(error) {
 }
 function showLogin() {
   ready = false;
+  document.body.classList.remove("in-game");
+  hud.disconnect();
   held.clear();
   path = [];
   useSource = null;
@@ -254,8 +282,11 @@ function onEvent(type, data) {
       break;
     case "map":
       ready = true;
+      document.body.classList.add("in-game");
+      hud.startSession(protocol);
       $("welcome").hidden = true;
       $("game").hidden = false;
+      renderer.resize();
       $("logout").disabled = false;
       $("connection").textContent = "Online";
       $("screen").focus();
@@ -373,6 +404,7 @@ let inventorySignature = "",
   battleSignature = "";
 function updateUI() {
   if (!protocol) return;
+  hud.update(protocol);
   const s = protocol.stats;
   $("player-name").textContent = protocol.player?.name || "Character";
   if (protocol.position) {
@@ -421,9 +453,13 @@ function updateUI() {
     ];
     for (let i = 1; i <= 10; i++) {
       const item = protocol.inventory.get(i);
-      $("inventory").append(
-        slot(item, itemRef({ x: 65535, y: i, z: 0 }, item), names[i]),
+      const cell = slot(
+        item,
+        itemRef({ x: 65535, y: i, z: 0 }, item),
+        names[i],
       );
+      cell.dataset.slot = i;
+      $("inventory").append(cell);
     }
   }
   const containers = JSON.stringify([...protocol.containers]);
@@ -432,7 +468,7 @@ function updateUI() {
     $("containers").replaceChildren();
     for (const c of protocol.containers.values()) {
       const panel = document.createElement("section");
-      panel.className = "panel";
+      panel.className = "container-panel";
       const header = document.createElement("div");
       header.className = "container-heading";
       const title = document.createElement("h2");
@@ -464,16 +500,45 @@ function updateUI() {
       $("containers").append(panel);
     }
   }
-  const creatures = visibleCreatures(),
-    battle = JSON.stringify(
-      creatures.map((c) => [c.id, c.health, protocol.target]),
-    );
+  const creatures = visibleCreatures();
+  const battleCount = $("battle-count");
+  if (battleCount) battleCount.textContent = creatures.length;
+  const battle = JSON.stringify(
+    creatures.map((c) => [c.id, c.health, protocol.target]),
+  );
   if (battle !== battleSignature) {
     battleSignature = battle;
     $("battle").replaceChildren();
     for (const c of creatures) {
       const button = document.createElement("button");
-      button.textContent = `${c.name} · ${c.health}%`;
+      button.setAttribute("aria-label", `${c.name} · ${c.health}%`);
+      const avatar = document.createElement("canvas");
+      avatar.width = 32;
+      avatar.height = 32;
+      avatar.className = "battle-avatar";
+      if (c.outfit?.type)
+        assets.draw(
+          avatar.getContext("2d"),
+          assets.data.itemCount + c.outfit.type,
+          0,
+          0,
+          { outfit: c.outfit, direction: 2, frame: 0 },
+        );
+      const info = document.createElement("span");
+      info.className = "battle-info";
+      const name = document.createElement("span");
+      name.className = "battle-name";
+      name.textContent = c.name;
+      const bar = document.createElement("span");
+      bar.className = "battle-health";
+      const fill = document.createElement("span");
+      fill.style.width = `${c.health}%`;
+      bar.append(fill);
+      const hp = document.createElement("span");
+      hp.className = "battle-meta";
+      hp.textContent = `${c.health}%`;
+      info.append(name, bar);
+      button.append(avatar, info, hp);
       button.classList.toggle("target", c.id === protocol.target);
       button.onclick = () => {
         protocol.target = c.id;
@@ -483,6 +548,10 @@ function updateUI() {
       $("battle").append(button);
     }
   }
+  const emptyBag = $("container-empty");
+  if (emptyBag) emptyBag.hidden = protocol.containers.size > 0;
+  const capacityLabel = $("inventory-capacity");
+  if (capacityLabel) capacityLabel.textContent = `${s.capacity || 0} oz`;
   $("vip").replaceChildren(
     ...Array.from(protocol.vip.values(), (friend) => {
       const e = document.createElement("div");
@@ -520,15 +589,9 @@ function topRef(position) {
   return itemRef(position, tile.things[index], index);
 }
 function eventPosition(e) {
-  if (!protocol?.position) return null;
-  const rect = $("screen").getBoundingClientRect(),
-    camera = renderer.camera(protocol);
-  return {
-    x: Math.floor(((e.clientX - rect.left) / rect.width) * 15 + camera.x - 7),
-    y: Math.floor(((e.clientY - rect.top) / rect.height) * 11 + camera.y - 5),
-    z: protocol.position.z,
-  };
+  return renderer.worldPosition(e.clientX, e.clientY, protocol);
 }
+
 function look(ref) {
   send(
     new Writer(0x8c)
@@ -592,7 +655,7 @@ function context(event, ref) {
         send(new Writer(0xa1).u32(ref.item.id));
         updateUI();
       });
-      if ((ref.item.id >>> 28) === 1) {
+      if (ref.item.id >>> 28 === 1) {
         add("Invite to party", () => send(new Writer(0xa3).u32(ref.item.id)));
         add("Join party", () => send(new Writer(0xa4).u32(ref.item.id)));
         add("Revoke invitation", () => send(new Writer(0xa5).u32(ref.item.id)));
@@ -755,13 +818,12 @@ function step() {
   }, 1000);
 }
 document.addEventListener("keydown", (e) => {
-  if (
-    ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName) ||
-    $("dialog").open
-  )
-    return;
+  if (hud.isTyping(e.target)) return;
   if (e.key === "Enter" && ready) {
+    if (e.target.closest("button, a")) return;
     e.preventDefault();
+    const chatPanel = $("panel-chat");
+    if (chatPanel.hidden) hud.setPanelVisible(chatPanel, true);
     $("chat-input").focus();
     return;
   }
@@ -792,6 +854,9 @@ document.addEventListener("keydown", (e) => {
 });
 document.addEventListener("keyup", (e) => held.delete(e.code));
 window.addEventListener("blur", () => held.clear());
+document.addEventListener("focusin", (event) => {
+  if (hud.isTyping(event.target)) held.clear();
+});
 $("chat-form").onsubmit = (e) => {
   e.preventDefault();
   const text = $("chat-input").value.trim();
@@ -989,6 +1054,8 @@ window.render_game_to_text = () =>
     mode: ready ? "playing" : "login",
     connected: socket?.readyState === 1,
     assets: assets.loaded,
+    viewport: renderer.view,
+    hud: hud.state(),
     coordinates: "x east, y south, z down; tiles use server coordinates",
     player: protocol?.player
       ? {
@@ -1022,6 +1089,8 @@ window.yurots = {
     return protocol;
   },
   assets,
+  renderer,
+  hud,
   send,
   look,
   use,
@@ -1029,7 +1098,9 @@ window.yurots = {
   findPath,
 };
 function loop() {
+  if (hud.isTyping()) held.clear();
   step();
+  hud.tick();
   renderer.render(protocol);
   requestAnimationFrame(loop);
 }

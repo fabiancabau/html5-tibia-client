@@ -7,7 +7,8 @@
     "test": "node --test tests/*.test.mjs",
     "test:live": "node tests/live.mjs",
     "test:advanced": "node tests/advanced.mjs",
-    "test:social": "node tests/social.mjs"
+    "test:social": "node tests/social.mjs",
+    "test:hud": "node tests/hud.mjs"
   },
   "engines": {
     "node": ">=20"

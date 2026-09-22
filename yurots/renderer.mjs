@@ -1,4 +1,5 @@
 import { key } from "./protocol76.mjs";
+import { viewGeometry, pointerToWorld } from "./viewport.mjs";
 export class Renderer76 {
   constructor(canvas, assets) {
     this.canvas = canvas;
@@ -7,6 +8,27 @@ export class Renderer76 {
     this.effects = [];
     this.texts = [];
     this.missiles = [];
+    this.view = { width: 480, height: 352, centerX: 7, centerY: 5 };
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(canvas);
+  }
+  resize() {
+    const rect = this.canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const next = viewGeometry(rect.width, rect.height);
+    if (this.canvas.width !== next.width) this.canvas.width = next.width;
+    if (this.canvas.height !== next.height) this.canvas.height = next.height;
+    this.view = next;
+  }
+  worldPosition(clientX, clientY, protocol) {
+    if (!protocol?.position) return null;
+    return pointerToWorld(
+      clientX,
+      clientY,
+      this.canvas.getBoundingClientRect(),
+      this.view,
+      this.camera(protocol),
+    );
   }
   camera(protocol) {
     const p = { ...protocol.position },
@@ -21,15 +43,15 @@ export class Renderer76 {
   screen(p, camera) {
     const dz = camera.z - p.z;
     return {
-      x: (p.x - camera.x + 7 - dz) * 32,
-      y: (p.y - camera.y + 5 - dz) * 32,
+      x: Math.round((p.x - camera.x + this.view.centerX - dz) * 32),
+      y: Math.round((p.y - camera.y + this.view.centerY - dz) * 32),
     };
   }
   render(protocol) {
     const ctx = this.ctx;
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = "#101615";
-    ctx.fillRect(0, 0, 480, 352);
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     if (!protocol?.position) return;
     const p = protocol.position,
       camera = this.camera(protocol),
@@ -133,7 +155,7 @@ export class Renderer76 {
         }
       if (z > p.z) {
         ctx.fillStyle = "rgba(0,0,0,.16)";
-        ctx.fillRect(0, 0, 480, 352);
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       }
     }
     this.effects = this.effects.filter((e) => {
