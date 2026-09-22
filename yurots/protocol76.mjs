@@ -171,8 +171,12 @@ export class Protocol76 {
           this.emit("death");
           break;
         case 0x64: {
+          oldSelf = null;
           this.position = r.pos();
           this.tiles.clear();
+          // A full map replaces the scene (stairs/teleports/login). A cached
+          // walk belongs to the previous scene and must not move this camera.
+          for (const creature of this.creatures.values()) delete creature.walk;
           const p = this.position;
           this.map(r, p.x - 8, p.y - 6, p.z, 18, 14);
           this.pendingMove = false;
@@ -218,7 +222,9 @@ export class Protocol76 {
         }
         case 0x6a: {
           const p = r.pos();
-          this.insert(p, this.thing(r));
+          const thing = this.thing(r);
+          if (thing.kind === "creature") delete thing.walk;
+          this.insert(p, thing);
           break;
         }
         case 0x6b: {

@@ -1,5 +1,11 @@
 import { key } from "./protocol76.mjs";
 import { viewGeometry, pointerToWorld } from "./viewport.mjs";
+import {
+  creaturePose,
+  creatureDepthPosition,
+  compareTileDepth,
+  samePosition,
+} from "./render-state.mjs";
 export class Renderer76 {
   constructor(canvas, assets) {
     this.canvas = canvas;
@@ -30,16 +36,12 @@ export class Renderer76 {
       this.camera(protocol),
     );
   }
-  camera(protocol) {
-    const p = { ...protocol.position },
-      walk = protocol.player?.walk;
-    if (walk) {
-      const t = Math.min(1, (performance.now() - walk.start) / walk.duration);
-      p.x = walk.from.x + (walk.to.x - walk.from.x) * t;
-      p.y = walk.from.y + (walk.to.y - walk.from.y) * t;
-    }
-    return p;
+  camera(protocol, now = performance.now()) {
+    if (protocol.player && samePosition(protocol.player.position, protocol.position))
+      return creaturePose(protocol.player, now).position;
+    return { ...protocol.position };
   }
+
   screen(p, camera) {
     const dz = camera.z - p.z;
     return {
@@ -47,15 +49,141 @@ export class Renderer76 {
       y: Math.round((p.y - camera.y + this.view.centerY - dz) * 32),
     };
   }
-  render(protocol) {
+  drawFloor(protocol, z, camera, now, labels) {
+    const p = protocol.position;
+    const entries = new Map();
+    for (let sy = -2; sy < 14; sy++)
+      for (let sx = -2; sx < 18; sx++) {
+        const dz = p.z - z;
+        const position = { x: p.x - 7 + sx + dz, y: p.y - 5 + sy + dz, z };
+        const tile = protocol.tiles.get(key(position));
+        if (tile)
+          entries.set(key(position), {
+            position,
+            tile,
+            creatures: [],
+            elevation: 0,
+          });
+      }
+    const tiles = [...entries.values()].sort((a, b) =>
+      compareTileDepth(a.position, b.position),
+    );
+    const seen = new Set();
+    for (const entry of tiles) {
+      for (const creature of entry.tile.things) {
+        if (creature.kind !== "creature" || seen.has(creature.id)) continue;
+        seen.add(creature.id);
+        const pose = creaturePose(creature, now);
+        const id = creature.outfit.type
+          ? this.assets.data.itemCount + creature.outfit.type
+          : creature.outfit.item;
+        const displacement = this.assets.get(id)?.properties.displacement;
+        const depth = creatureDepthPosition(creature, pose, displacement);
+        const depthKey = key(depth);
+        if (!entries.has(depthKey))
+          entries.set(depthKey, {
+            position: depth,
+            tile: { things: [] },
+            creatures: [],
+            elevation: 0,
+          });
+        entries.get(depthKey).creatures.push({ creature, pose });
+      }
+    }
+    // Every walkable surface on this floor is underneath its creatures. In
+    // particular, the old/source tile must never repaint an interpolating actor.
+    for (const entry of tiles) {
+      for (const item of entry.tile.things) {
+        if (item.kind === "item" && this.assets.rank(item.id) < 2)
+          this.drawItem(item, entry, camera);
+      }
+    }
+    const scene = [...entries.values()].sort((a, b) =>
+      compareTileDepth(a.position, b.position),
+    );
+    for (const entry of scene) {
+      const items = entry.tile.things.filter((t) => t.kind === "item");
+      items
+        .filter((t) => this.assets.rank(t.id) === 2)
+        .forEach((t) => this.drawItem(t, entry, camera));
+      items
+        .filter((t) => this.assets.rank(t.id) === 5)
+        .reverse()
+        .forEach((t) => this.drawItem(t, entry, camera));
+      for (const { creature, pose } of entry.creatures)
+        this.drawCreature(
+          creature,
+          pose,
+          entry.elevation,
+          camera,
+          protocol,
+          labels,
+        );
+      const at = this.screen(entry.position, camera);
+      for (const item of items.filter((t) => this.assets.rank(t.id) === 3))
+        this.assets.draw(this.ctx, item.id, at.x, at.y, {
+          position: entry.position,
+          count: item.count,
+        });
+    }
+  }
+
+  drawItem(item, entry, camera) {
+    const at = this.screen(entry.position, camera);
+    this.assets.draw(
+      this.ctx,
+      item.id,
+      at.x - entry.elevation,
+      at.y - entry.elevation,
+      { position: entry.position, count: item.count },
+    );
+    entry.elevation = Math.min(
+      24,
+      entry.elevation + (this.assets.get(item.id)?.properties.elevation || 0),
+    );
+  }
+
+  drawCreature(creature, pose, elevation, camera, protocol, labels) {
+    const outfit = creature.outfit;
+    const at = this.screen(pose.position, camera);
+    const id = outfit.type
+      ? this.assets.data.itemCount + outfit.type
+      : outfit.item;
+    let frame = 0;
+    const frames = this.assets.get(id)?.frameGroups[0].animationLength || 1;
+    if (pose.walking && frames > 1)
+      frame = 1 + (Math.floor(pose.progress * 4) % (frames - 1));
+    if (creature.id === protocol.target) {
+      this.ctx.strokeStyle = "#eb5855";
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeRect(at.x, at.y, 32, 32);
+    }
+    if (id)
+      this.assets.draw(
+        this.ctx,
+        id,
+        at.x - elevation,
+        at.y - elevation,
+        outfit.type
+          ? { outfit, direction: creature.direction, frame }
+          : { position: pose.position },
+      );
+    if (creature.name && pose.position.z === protocol.position.z)
+      labels.push({
+        c: creature,
+        x: at.x + 16 - elevation,
+        y: at.y - elevation,
+      });
+  }
+
+  render(protocol, now = performance.now()) {
     const ctx = this.ctx;
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = "#101615";
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     if (!protocol?.position) return;
     const p = protocol.position,
-      camera = this.camera(protocol),
-      now = performance.now();
+      camera = this.camera(protocol, now);
     let min = p.z > 7 ? p.z - 2 : 0,
       max = p.z > 7 ? Math.min(15, p.z + 2) : 7;
     // Hide roofs above the player, including the diagonally projected covering tile.
@@ -80,84 +208,13 @@ export class Renderer76 {
     }
     const labels = [];
     for (let z = max; z >= min; z--) {
-      for (let sy = -2; sy < 14; sy++)
-        for (let sx = -2; sx < 18; sx++) {
-          const dz = p.z - z,
-            pos = { x: p.x - 7 + sx + dz, y: p.y - 5 + sy + dz, z };
-          const tile = protocol.tiles.get(key(pos));
-          if (!tile) continue;
-          const screen = this.screen(pos, camera);
-          let elevation = 0;
-          const items = tile.things.filter((t) => t.kind === "item");
-          const ground = items.filter((t) => this.assets.rank(t.id) < 3),
-            down = items.filter((t) => this.assets.rank(t.id) === 5).reverse(),
-            top = items.filter((t) => this.assets.rank(t.id) === 3);
-          const drawItem = (t) => {
-            this.assets.draw(
-              ctx,
-              t.id,
-              screen.x - elevation,
-              screen.y - elevation,
-              { position: pos, count: t.count },
-            );
-            elevation = Math.min(
-              24,
-              elevation + (this.assets.get(t.id)?.properties.elevation || 0),
-            );
-          };
-          ground.forEach(drawItem);
-          down.forEach(drawItem);
-          for (const c of tile.things.filter((t) => t.kind === "creature")) {
-            const at = { ...pos };
-            let frame = 0;
-            if (c.walk) {
-              const t = Math.min(1, (now - c.walk.start) / c.walk.duration);
-              at.x = c.walk.from.x + (c.walk.to.x - c.walk.from.x) * t;
-              at.y = c.walk.from.y + (c.walk.to.y - c.walk.from.y) * t;
-              const f = this.assets.get(
-                this.assets.data.itemCount + c.outfit.type,
-              )?.frameGroups[0];
-              if (t < 1 && f?.animationLength > 1)
-                frame = 1 + (Math.floor(t * 4) % (f.animationLength - 1));
-            }
-            const cp = this.screen(at, camera),
-              outfit = c.outfit;
-            if (c.id === protocol.target) {
-              ctx.strokeStyle = "#eb5855";
-              ctx.lineWidth = 1;
-              ctx.strokeRect(cp.x, cp.y, 32, 32);
-            }
-            if (outfit.type)
-              this.assets.draw(
-                ctx,
-                this.assets.data.itemCount + outfit.type,
-                cp.x - elevation,
-                cp.y - elevation,
-                { outfit, direction: c.direction, frame },
-              );
-            else if (outfit.item)
-              this.assets.draw(
-                ctx,
-                outfit.item,
-                cp.x - elevation,
-                cp.y - elevation,
-                { position: pos },
-              );
-            if (c.name && z === p.z)
-              labels.push({ c, x: cp.x + 16 - elevation, y: cp.y - elevation });
-          }
-          top.forEach((t) =>
-            this.assets.draw(ctx, t.id, screen.x, screen.y, {
-              position: pos,
-              count: t.count,
-            }),
-          );
-        }
+      this.drawFloor(protocol, z, camera, now, labels);
       if (z > p.z) {
         ctx.fillStyle = "rgba(0,0,0,.16)";
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       }
     }
+
     this.effects = this.effects.filter((e) => {
       const def = this.assets.data.getAnimation(e.id),
         age = now - e.start,
