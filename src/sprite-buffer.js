@@ -144,6 +144,7 @@ SpriteBuffer.prototype.reserve = function(id) {
 
   // Clear the position to be reserved
   let position = this.__getPosition(this.__spriteBufferIndex);
+  this.__spriteBufferCanvas.context.clearRect(position.x * 32, position.y * 32, 32, 32);
 
   this.__spriteBufferIndex++;
   this.__spriteBufferIndex = this.__spriteBufferIndex % this.__spriteBufferArray.length;
@@ -246,10 +247,10 @@ SpriteBuffer.prototype.__load = function(name, buffer) {
   this.__version = this.SIGNATURES[signature];
 
   // The total number of sprites is either 16-bit or 32-bit depending on the version
-  let spriteCount = (this.__version > 740) ? this.packet.readUInt32() : this.packet.readUInt16();
+  let spriteCount = (this.__version >= 960) ? this.packet.readUInt32() : this.packet.readUInt16();
 
   // Go over each sprite
-  for(let i = 1; i < spriteCount; i++) {
+  for(let i = 1; i <= spriteCount; i++) {
 
     // Read the sprite address (32-bit)
     let address = this.packet.readUInt32();

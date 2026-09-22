@@ -1,0 +1,25 @@
+{
+  "name": "yurots-html5-client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node gateway/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:live": "node tests/live.mjs",
+    "test:advanced": "node tests/advanced.mjs",
+    "test:social": "node tests/social.mjs",
+    "test:hud": "node tests/hud.mjs",
+    "test:movement": "node tests/movement-live.mjs",
+    "test:hunts": "node tests/hunts-live.mjs",
+    "test:hunts-isolation": "node tests/hunts-isolation.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

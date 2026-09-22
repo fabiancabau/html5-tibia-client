@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111216" />
+    <title>YurOTS · Tibia 7.6</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="yurots/style.css" />
+    <link rel="stylesheet" href="yurots/hunts.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="YurOTS home">
+        <span class="brand-mark" aria-hidden="true">Y</span>
+        <span class="brand-word"
+          >Yur<span>OTS</span><small>THE ORIGINAL WORLD</small></span
+        >
+      </a>
+      <div class="character-card">
+        <div class="avatar-frame">
+          <canvas
+            id="top-avatar"
+            width="40"
+            height="40"
+            aria-label="Your character"
+          ></canvas>
+        </div>
+        <div class="character-identity">
+          <strong id="top-player-name">YurOTS</strong
+          ><span id="top-player-detail">Your adventure awaits</span
+          ><span class="world-version">TIBIA <b>7.6</b></span>
+        </div>
+      </div>
+      <div class="connection-info">
+        <span class="connection-light" aria-hidden="true"></span
+        ><span id="connection">Offline</span><span id="coordinates"></span>
+      </div>
+      <nav class="game-nav" aria-label="Game panels">
+        <button
+          class="icon-button is-active"
+          type="button"
+          data-panel-toggle="panel-inventory"
+          aria-pressed="true"
+          aria-label="Inventory"
+          title="Inventory"
+        >
+          <canvas width="32" height="32" data-item-icon="2854"></canvas
+          ><span class="button-caption">Inventory</span>
+        </button>
+        <button
+          class="icon-button is-active"
+          type="button"
+          data-panel-toggle="panel-battle"
+          aria-pressed="true"
+          aria-label="Battle list"
+          title="Battle list"
+        >
+          <canvas width="32" height="32" data-item-icon="3288"></canvas
+          ><span class="button-caption">Battle</span>
+        </button>
+        <button
+          class="icon-button is-active"
+          type="button"
+          data-panel-toggle="panel-session"
+          aria-pressed="true"
+          aria-label="Hunt analyzer"
+          title="Hunt analyzer"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 18V12M10 18V8M16 18V4M3 21h18M4 7l6-4 6 1 5-3" /></svg
+          ><span class="button-caption">Hunt</span>
+        </button>
+        <button
+          class="icon-button is-active"
+          type="button"
+          data-panel-toggle="panel-social"
+          aria-pressed="true"
+          aria-label="Friends"
+          title="Friends"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="9" cy="8" r="3" />
+            <path
+              d="M3 20v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"
+            /></svg
+          ><span class="button-caption">Friends</span>
+        </button>
+        <button
+          class="icon-button is-active"
+          type="button"
+          data-panel-toggle="panel-chat"
+          aria-pressed="true"
+          aria-label="Chat"
+          title="Chat"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4h16v13H9l-5 4V4ZM8 8h8M8 12h6" /></svg
+          ><span class="button-caption">Chat</span>
+        </button>
+        <span class="nav-divider"></span>
+        <button
+          id="outfit"
+          class="icon-button"
+          type="button"
+          aria-label="Change outfit"
+          title="Change outfit"
+        >
+          <canvas width="32" height="32" data-item-icon="3420"></canvas
+          ><span class="button-caption">Outfit</span>
+        </button>
+        <button
+          id="reset-layout"
+          class="icon-button utility-button"
+          type="button"
+          aria-label="Reset panel layout"
+          title="Reset panel layout"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 4h18v16H3ZM3 9h18M9 9v11M16 9v11" /></svg
+          ><span class="button-caption">Layout</span>
+        </button>
+        <button
+          id="fullscreen"
+          class="icon-button utility-button"
+          type="button"
+          aria-label="Full screen"
+          title="Full screen"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 3H3v6M15 3h6v6M3 15v6h6M21 15v6h-6" /></svg
+          ><span class="button-caption">Expand</span>
+        </button>
+        <button
+          id="logout"
+          class="icon-button utility-button"
+          type="button"
+          aria-label="Logout"
+          title="Logout"
+          disabled
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11 4H4v16h7M10 12h11M17 8l4 4-4 4" /></svg
+          ><span class="button-caption">Logout</span>
+        </button>
+      </nav>
+    </header>
+    <main>
+      <section id="welcome" class="panel">
+        <div class="welcome-emblem" aria-hidden="true">Y</div>
+        <div class="eyebrow">YurOTS · The original world</div>
+        <h1>A familiar world.<br /><em>A new adventure.</em></h1>
+        <p>Return to Tibia 7.6. Your world, right in your browser.</p>
+        <form id="login-form">
+          <label
+            >Account number<input
+              id="account"
+              inputmode="numeric"
+              autocomplete="username"
+              placeholder="Account number"
+              required
+          /></label>
+          <label
+            >Password<input
+              id="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Password"
+              required
+          /></label>
+          <button id="login" class="primary" disabled>
+            Enter the world <span aria-hidden="true">›</span>
+          </button>
+        </form>
+        <div id="characters" hidden>
+          <h2>Choose your character</h2>
+          <div id="character-list"></div>
+        </div>
+        <p id="status" role="status">Loading game assets…</p>
+        <details class="asset-settings">
+          <summary>Game assets <span>›</span></summary>
+          <p>
+            Select Tibia 7.6 Tibia.dat and Tibia.spr together. Files stay in
+            this browser.
+          </p>
+          <input id="assets" type="file" accept=".dat,.spr" multiple /><span
+            id="asset-status"
+          ></span>
+        </details>
+        <div class="welcome-controls">
+          <span><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> Move</span
+          ><span><kbd>Enter</kbd> Chat</span
+          ><span>Right click to interact</span>
+        </div>
+      </section>
+      <section id="game" hidden aria-label="YurOTS game">
+        <div class="world-frame">
+          <canvas
+            id="screen"
+            width="480"
+            height="352"
+            tabindex="0"
+            aria-label="Game world"
+          ></canvas>
+          <div id="notice" role="status"></div>
+        </div>
+        <div class="hud-overlay">
+          <section id="panel-session" class="floating-panel session-panel">
+            <div class="panel-heading" data-panel-drag>
+              <h2>Hunt analyzer</h2>
+              <div class="panel-heading-actions">
+                <span class="live-indicator" title="Current session"></span
+                ><button
+                  type="button"
+                  data-panel-close="panel-session"
+                  aria-label="Hide hunt analyzer"
+                  title="Hide hunt analyzer"
+                >
+                  −
+                </button>
+              </div>
+            </div>
+            <div class="session-summary">
+              <div>
+                <span>SESSION</span><strong id="session-time">00:00:00</strong>
+              </div>
+              <div>
+                <span>EXPERIENCE / HOUR</span
+                ><strong id="session-xp-hour">—</strong>
+              </div>
+            </div>
+            <div class="panel-subheading">
+              <span>Current hunt</span
+              ><span class="subheading-note">This session</span>
+            </div>
+            <dl class="session-metrics">
+              <div>
+                <dt>Experience gained</dt>
+                <dd id="session-xp" class="metric-positive">—</dd>
+              </div>
+              <div>
+                <dt>Character level</dt>
+                <dd id="session-level">—</dd>
+              </div>
+              <div>
+                <dt>Level progress</dt>
+                <dd id="session-progress">—</dd>
+              </div>
+            </dl>
+            <div class="panel-footnote">Progress tracked since login.</div>
+          </section>
+          <section id="panel-inventory" class="floating-panel inventory-panel">
+            <div class="panel-heading" data-panel-drag>
+              <h2>Inventory</h2>
+              <button
+                type="button"
+                data-panel-close="panel-inventory"
+                aria-label="Hide inventory"
+                title="Hide inventory"
+              >
+                ×
+              </button>
+            </div>
+            <div class="inventory-body">
+              <div class="equipment-column">
+                <div class="section-label">Equipment</div>
+                <div id="inventory"></div>
+                <div class="equipment-caption">
+                  <span>Capacity</span
+                  ><strong id="inventory-capacity">—</strong>
+                </div>
+              </div>
+              <div class="backpack-column">
+                <div class="section-label">
+                  Backpacks
+                  <span class="small-glyph" aria-hidden="true">▦</span>
+                </div>
+                <div id="containers"></div>
+                <div id="container-empty" class="container-empty">
+                  <canvas
+                    width="32"
+                    height="32"
+                    data-item-icon="2854"
+                    aria-hidden="true"
+                  ></canvas
+                  ><span>Open your backpack</span
+                  ><small>Right click it to view its contents</small>
+                </div>
+              </div>
+            </div>
+            <div class="inventory-stats">
+              <div id="stats"></div>
+              <details class="skills-details">
+                <summary>Skills <span>⌄</span></summary>
+                <div id="skills"></div>
+              </details>
+            </div>
+          </section>
+          <section id="panel-battle" class="floating-panel battle-panel">
+            <div class="panel-heading" data-panel-drag>
+              <h2>Battle</h2>
+              <button
+                type="button"
+                data-panel-close="panel-battle"
+                aria-label="Hide battle list"
+                title="Hide battle list"
+              >
+                ×
+              </button>
+            </div>
+            <div class="panel-subheading">
+              <span>Nearby creatures</span
+              ><span id="battle-count" class="battle-count">0</span>
+            </div>
+            <div id="battle"></div>
+            <div class="battle-empty">No creatures in sight</div>
+            <div class="panel-footer">
+              <button id="stop-attack" type="button">
+                <span aria-hidden="true">◼</span> Stop attack <kbd>Esc</kbd>
+              </button>
+            </div>
+          </section>
+          <section id="panel-social" class="floating-panel social-panel">
+            <div class="panel-heading" data-panel-drag>
+              <h2>Friends</h2>
+              <button
+                type="button"
+                data-panel-close="panel-social"
+                aria-label="Hide friends"
+                title="Hide friends"
+              >
+                ×
+              </button>
+            </div>
+            <div id="vip"></div>
+            <div class="friends-empty">Keep your companions close.</div>
+            <div class="panel-footer">
+              <button id="add-vip" type="button">
+                <span aria-hidden="true">+</span> Add friend
+              </button>
+            </div>
+          </section>
+          <section id="panel-chat" class="floating-panel chat-panel">
+            <div class="panel-heading" data-panel-drag>
+              <h2>Chat</h2>
+              <div class="panel-heading-actions">
+                <button
+                  id="channels"
+                  type="button"
+                  title="Join a channel"
+                  aria-label="Join a channel"
+                >
+                  +</button
+                ><button
+                  type="button"
+                  data-panel-close="panel-chat"
+                  aria-label="Hide chat"
+                  title="Hide chat"
+                >
+                  −
+                </button>
+              </div>
+            </div>
+            <div class="chat-channel-row">
+              <span class="chat-current-channel">Messages</span
+              ><span class="chat-channel-help">Enter to chat</span>
+            </div>
+            <div id="messages" role="log" aria-live="polite"></div>
+            <form id="chat-form">
+              <select id="channel" aria-label="Chat channel">
+                <option value="say">Say</option>
+                <option value="whisper">Whisper</option>
+                <option value="yell">Yell</option></select
+              ><input
+                id="chat-input"
+                maxlength="255"
+                placeholder="Message or spell…"
+                aria-label="Message"
+              /><button
+                type="submit"
+                title="Send message"
+                aria-label="Send message"
+              >
+                Send
+              </button>
+            </form>
+          </section>
+          <section
+            id="combat-dock"
+            class="combat-dock"
+            aria-label="Character status and hotkeys"
+          >
+            <div class="dock-vitals">
+              <h2 id="player-name" class="sr-only">Character</h2>
+              <div class="bar health" title="Health">
+                <span id="health-fill"></span><b id="health">—</b
+                ><small>HP</small>
+              </div>
+              <div class="bar mana" title="Mana">
+                <span id="mana-fill"></span><b id="mana">—</b><small>MP</small>
+              </div>
+              <div class="bar experience" title="Experience to next level">
+                <span id="xp-fill"></span><b id="xp-label">—</b
+                ><small>XP</small>
+              </div>
+            </div>
+            <div class="dock-divider"></div>
+            <div id="hotbar" class="hotbar" aria-label="Spell hotkeys"></div>
+            <div class="dock-divider"></div>
+            <div class="fight">
+              <label class="fight-label" for="fight">COMBAT MODE</label
+              ><select id="fight" aria-label="Fight mode">
+                <option value="1">Offensive</option>
+                <option value="2">Balanced</option>
+                <option value="3">Defensive</option></select
+              ><label class="chase-option"
+                ><input type="checkbox" id="chase" /> Chase target</label
+              >
+            </div>
+            <div class="dock-hint">
+              <span>Arrows to move</span><i>·</i
+              ><span>Right click to interact</span><i>·</i
+              ><span>Right click a hotkey to edit</span>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <div id="context-menu" hidden></div>
+    <dialog id="dialog">
+      <form method="dialog">
+        <h2 id="dialog-title"></h2>
+        <div id="dialog-body"></div>
+        <div class="dialog-actions">
+          <button value="cancel">Close</button
+          ><button id="dialog-accept" value="accept" class="primary">
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <footer class="site-footer">
+      <span>YurOTS <b>7.6</b></span
+      ><span>A world worth returning to.</span
+      ><span>Browser client based on Forby HTML5</span>
+    </footer>
+    <script src="src/proto.js"></script>
+    <script src="src/position.js"></script>
+    <script src="src/bitflag.js"></script>
+    <script src="src/canvas.js"></script>
+    <script src="src/sprite.js"></script>
+    <script src="src/opcodes.js"></script>
+    <script src="src/packet.js"></script>
+    <script src="src/packetreader.js"></script>
+    <script src="src/frame-group.js"></script>
+    <script src="src/dataobject.js"></script>
+    <script src="src/object-buffer.js"></script>
+    <script src="src/sprite-buffer.js"></script>
+    <script src="src/outfit.js"></script>
+    <script type="module" src="yurots/app.mjs"></script>
+  </body>
+</html>

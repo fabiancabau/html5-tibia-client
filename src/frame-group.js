@@ -43,7 +43,7 @@ FrameGroup.prototype.getAlwaysAnimatedFrame = function() {
   let sum = 0;
 
   // For old versions
-  if(gameClient.clientVersion === 740) {
+  if(gameClient.clientVersion < 1050) {
     return Math.floor((gameClient.renderer.__nMiliseconds % (BoxAnimation.prototype.DEFAULT_BLINK_LENGTH_MS * this.animationLength)) / BoxAnimation.prototype.DEFAULT_BLINK_LENGTH_MS);
   }
 

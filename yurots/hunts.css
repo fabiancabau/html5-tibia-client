@@ -1,0 +1,433 @@
+.hunt-nav {
+  color: #d3b270;
+}
+.hunt-dialog {
+  width: min(1180px, 96vw);
+  max-width: 96vw;
+  height: min(790px, 89dvh);
+  max-height: 89dvh;
+  padding: 0;
+  border: 1px solid #798398;
+  border-radius: 4px;
+  background: #181b27;
+  color: #bdc8e7;
+  box-shadow:
+    inset 0 0 0 3px #283143,
+    0 0 0 3px #090d17,
+    0 18px 70px #000b;
+  overflow: hidden;
+}
+.hunt-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.hunt-dialog::backdrop {
+  background: #050811a8;
+}
+.hunt-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid #434d66;
+  background: linear-gradient(#272d41, #202638);
+}
+.hunt-heading h2 {
+  color: #85a8ff;
+  font-size: 19px;
+}
+.hunt-heading button {
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  font-size: 22px;
+}
+.hunt-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 13px 14px;
+  border-bottom: 1px solid #353e54;
+  background: #131622;
+}
+.hunt-tabs button {
+  min-width: 160px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+.hunt-tabs .selected,
+.hunt-modes .selected {
+  color: #b7cbff;
+  border-color: #6d9dff;
+  box-shadow:
+    inset 0 0 10px #336cff30,
+    0 0 0 1px #4973bd;
+}
+#hunt-alert {
+  padding: 0 16px;
+  color: #d3b474;
+  line-height: 30px;
+  flex-shrink: 0;
+}
+#hunt-alert:empty {
+  display: none;
+}
+#hunt-catalog-view {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.hunt-search-row {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.hunt-search-row input {
+  flex: 1;
+  font-size: 15px;
+  padding: 13px !important;
+}
+#hunt-count {
+  font-size: 13px;
+  color: #a0aed4;
+  white-space: nowrap;
+}
+.hunt-grid {
+  flex: 1;
+  min-height: 0;
+  grid-auto-rows: 180px;
+  overflow: auto;
+  padding: 0 16px 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: start;
+  gap: 14px;
+  scrollbar-width: thin;
+}
+.hunt-card {
+  position: relative;
+  background: #222637;
+  border: 1px solid #414a64;
+  border-radius: 6px;
+  overflow: hidden;
+  min-width: 0;
+}
+.hunt-card:hover {
+  border-color: #7498dc;
+}
+.hunt-card-main {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  height: 144px;
+  align-items: center;
+  text-align: left;
+  border: 0;
+  background: none !important;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 14px 25px 14px 12px;
+}
+.hunt-monster {
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  background: #151926;
+  border: 1px solid #323c55;
+  border-radius: 5px;
+}
+.hunt-card-text {
+  min-width: 0;
+}
+.hunt-card h3 {
+  font-size: 15px;
+  line-height: 1.3;
+  margin: 0 0 7px;
+  color: #becdf8;
+}
+.hunt-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #9daed2;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hunt-favorite {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  padding: 0;
+  width: 24px;
+  height: 25px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 23px;
+  color: #a9b9d9;
+}
+.hunt-card-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 9px 10px;
+  border-top: 1px solid #333b51;
+  background: #151924;
+  font-size: 10px;
+  color: #aab6d3;
+}
+.hunt-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  border-top: 1px solid #3d475f;
+  background: #121621;
+  padding: 13px 16px;
+}
+#hunt-explanation {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #919fc5;
+}
+.hunt-footer button {
+  flex-shrink: 0;
+  padding: 10px 15px;
+}
+#hunt-detail-view {
+  overflow: auto;
+  min-height: 0;
+  padding: 16px;
+  scrollbar-width: thin;
+}
+.hunt-hero {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid #343e57;
+  border-radius: 6px;
+  background: #141824;
+  margin-bottom: 16px;
+}
+.hunt-hero h2 {
+  font-size: 28px;
+  color: #c4d3ff;
+}
+.hunt-hero p {
+  font-size: 14px;
+}
+.hunt-detail-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.hunt-box {
+  background: #141824;
+  border: 1px solid #333e57;
+  border-radius: 6px;
+  padding: 18px;
+}
+.hunt-box h3 {
+  color: #a9b9e4;
+  font-size: 15px;
+  margin: 0 0 16px;
+}
+.hunt-modes {
+  display: flex;
+  gap: 9px;
+}
+.hunt-modes button {
+  flex: 1;
+  padding: 10px 6px;
+}
+.hunt-creatures {
+  display: grid;
+  gap: 12px;
+}
+.hunt-creature {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+.hunt-creature strong,
+.hunt-creature small {
+  display: block;
+}
+.hunt-creature small {
+  color: #94a4ca;
+  margin-top: 4px;
+}
+.hunt-loot-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.hunt-loot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 43px;
+  border-top: 1px solid #30384c;
+  padding: 5px;
+}
+.hunt-loot-row span {
+  flex: 1;
+}
+.hunt-loot-row small {
+  color: #8899bb;
+}
+.hunt-loot-row canvas {
+  image-rendering: pixelated;
+}
+.hunt-empty {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 40px;
+}
+.hunt-controls {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 118px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 28;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  max-width: calc(100vw - 40px);
+  border: 1px solid #9e8251;
+  border-radius: 4px;
+  background: #131b2bf0;
+  box-shadow:
+    0 0 0 2px #15110c,
+    inset 0 0 0 2px #303544;
+}
+.hunt-live-info {
+  min-width: 150px;
+}
+.hunt-live-info strong,
+.hunt-live-info span,
+.hunt-live-info small {
+  display: block;
+}
+.hunt-live-info strong {
+  color: #d0af6c;
+  font-size: 13px;
+}
+.hunt-live-info span {
+  color: #acbbd9;
+  font-size: 12px;
+}
+.hunt-live-info small {
+  color: #89a1c2;
+  font-size: 10px;
+}
+.hunt-controls button {
+  white-space: nowrap;
+  font-size: 11px;
+}
+#hunt-leave {
+  color: #e79b9e;
+  border-color: #835a60;
+}
+@media (max-width: 1050px) {
+  .hunt-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hunt-card-main {
+    height: 130px;
+  }
+  .hunt-controls {
+    bottom: 110px;
+  }
+}
+@media (max-width: 720px) {
+  .hunt-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 194px;
+  }
+  .hunt-card-main {
+    flex-direction: column;
+    align-items: flex-start;
+    height: 160px;
+    padding: 10px;
+  }
+  .hunt-card-main canvas {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .hunt-card h3 {
+    font-size: 13px;
+  }
+  .hunt-search-row {
+    gap: 8px;
+    padding: 10px;
+  }
+  #hunt-count {
+    font-size: 10px;
+  }
+  .hunt-tabs button {
+    min-width: 0;
+    flex: 1;
+  }
+  .hunt-detail-columns {
+    grid-template-columns: 1fr;
+  }
+  .hunt-hero h2 {
+    font-size: 23px;
+  }
+  .hunt-footer {
+    flex-wrap: wrap;
+  }
+  #hunt-explanation {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .hunt-controls {
+    bottom: 145px;
+    flex-wrap: wrap;
+    width: calc(100vw - 20px);
+    gap: 6px;
+    padding: 8px;
+  }
+  .hunt-live-info {
+    flex-basis: 100%;
+  }
+  .hunt-controls button {
+    flex: 1;
+  }
+  .hunt-heading h2 {
+    font-size: 16px;
+  }
+  .hunt-card-footer {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 620px) {
+  .game-nav {
+    overflow-x: auto;
+    max-width: calc(100vw - 88px);
+    scrollbar-width: none;
+    flex-shrink: 1;
+  }
+  .game-nav button {
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 1251px) and (max-width: 1400px) {
+  .chat-panel {
+    bottom: 113px;
+  }
+}
