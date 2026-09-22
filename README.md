@@ -1,3 +1,5 @@
+> This fork includes a native **YurOTS / Tibia 7.6** mode. See [YUROTS.md](YUROTS.md) for setup and verification.
+
 # Forby HTML5 Open Tibia Client
 
 # Example

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YurOTS · Tibia 7.6</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="yurots/style.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <span class="crest">Y</span><strong>YurOTS</strong
+        ><span class="subtitle">A familiar world. A new window.</span>
+      </div>
+      <div>
+        <span id="connection">Offline</span
+        ><button id="fullscreen">Full screen</button
+        ><button id="logout" disabled>Logout</button>
+      </div>
+    </header>
+    <main>
+      <section id="welcome" class="panel">
+        <div class="eyebrow">RETURN TO THE WORLD OF TIBIA</div>
+        <h1>Your next adventure<br />starts here.</h1>
+        <p>Explore YurOTS in your browser with the original 7.6 artwork.</p>
+        <form id="login-form">
+          <label
+            >Account number<input
+              id="account"
+              inputmode="numeric"
+              autocomplete="username"
+              required /></label
+          ><label
+            >Password<input
+              id="password"
+              type="password"
+              autocomplete="current-password"
+              required /></label
+          ><button id="login" class="primary" disabled>Enter the world</button>
+        </form>
+        <div id="characters" hidden>
+          <h2>Choose your character</h2>
+          <div id="character-list"></div>
+        </div>
+        <p id="status" role="status">Loading game assets…</p>
+        <details>
+          <summary>Game assets</summary>
+          <p>
+            Select Tibia 7.6 Tibia.dat and Tibia.spr together. Files stay in
+            this browser.
+          </p>
+          <input id="assets" type="file" accept=".dat,.spr" multiple /><span
+            id="asset-status"
+          ></span>
+        </details>
+        <p class="controls">
+          Arrow keys to walk · Ctrl + arrows to turn<br />Click to walk · Right
+          click to interact · Enter to chat
+        </p>
+      </section>
+      <section id="game" hidden>
+        <div class="game-layout">
+          <div class="world-column">
+            <div class="world-frame">
+              <canvas
+                id="screen"
+                width="480"
+                height="352"
+                tabindex="0"
+                aria-label="Game world"
+              ></canvas>
+              <div id="notice" role="status"></div>
+            </div>
+            <div class="chat panel">
+              <div class="chat-heading">
+                <strong>Messages</strong><span id="coordinates"></span>
+              </div>
+              <div id="messages" role="log" aria-live="polite"></div>
+              <form id="chat-form">
+                <select id="channel" aria-label="Chat channel">
+                  <option value="say">Say</option>
+                  <option value="whisper">Whisper</option>
+                  <option value="yell">Yell</option></select
+                ><input
+                  id="chat-input"
+                  maxlength="255"
+                  placeholder="Say something, or cast a spell…"
+                  aria-label="Message"
+                /><button>Send</button>
+              </form>
+            </div>
+            <div class="controls">
+              Arrows / numpad: walk · Ctrl + arrows: turn · Shift + click: look
+              · Right click: actions · Drag items to move
+            </div>
+          </div>
+          <aside>
+            <section class="panel">
+              <h2 id="player-name">Character</h2>
+              <div class="bar health">
+                <span id="health-fill"></span><b id="health"></b>
+              </div>
+              <div class="bar mana">
+                <span id="mana-fill"></span><b id="mana"></b>
+              </div>
+              <div id="stats"></div>
+              <details>
+                <summary>Skills</summary>
+                <div id="skills"></div>
+              </details>
+            </section>
+            <section class="panel">
+              <h2>Equipment</h2>
+              <div id="inventory"></div>
+              <div class="fight">
+                <select id="fight" aria-label="Fight mode">
+                  <option value="1">Offensive</option>
+                  <option value="2">Balanced</option>
+                  <option value="3">Defensive</option></select
+                ><label><input type="checkbox" id="chase" /> Chase</label>
+              </div>
+            </section>
+            <section class="panel">
+              <h2>Battle</h2>
+              <div id="battle"></div>
+              <button id="stop-attack">Stop attack</button>
+            </section>
+            <div id="containers"></div>
+            <section class="panel actions">
+              <button id="outfit">Outfit</button
+              ><button id="channels">Channels</button
+              ><button id="add-vip">Add friend</button>
+              <div id="vip"></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <div id="context-menu" hidden></div>
+    <dialog id="dialog">
+      <form method="dialog">
+        <h2 id="dialog-title"></h2>
+        <div id="dialog-body"></div>
+        <div class="dialog-actions">
+          <button value="cancel">Close</button
+          ><button id="dialog-accept" value="accept" class="primary">
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <footer>YurOTS 7.6 · Browser client based on Forby HTML5</footer>
+    <script src="src/proto.js"></script>
+    <script src="src/position.js"></script>
+    <script src="src/bitflag.js"></script>
+    <script src="src/canvas.js"></script>
+    <script src="src/sprite.js"></script>
+    <script src="src/opcodes.js"></script>
+    <script src="src/packet.js"></script>
+    <script src="src/packetreader.js"></script>
+    <script src="src/frame-group.js"></script>
+    <script src="src/dataobject.js"></script>
+    <script src="src/object-buffer.js"></script>
+    <script src="src/sprite-buffer.js"></script>
+    <script src="src/outfit.js"></script>
+    <script type="module" src="yurots/app.mjs"></script>
+  </body>
+</html>

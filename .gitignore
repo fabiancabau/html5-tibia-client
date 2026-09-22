@@ -1,0 +1,4 @@
+node_modules/
+data/76/*.dat
+data/76/*.spr
+artifacts/

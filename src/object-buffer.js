@@ -26,7 +26,8 @@ const ObjectBuffer = function() {
 
 ObjectBuffer.prototype.SIGNATURES = new Object({
   "42A3": 1098,
-  "41BF619C": 740
+  "41BF619C": 740,
+  "439D5A33": 760
 });
 
 ObjectBuffer.prototype.attributes = new Object({
@@ -280,7 +281,7 @@ ObjectBuffer.prototype.__load = function(name, buffer) {
 
       let x = packet.readUInt8();
       let y = packet.readUInt8();
-      let z = (this.__version > 740) ? packet.readUInt8() : 1;
+      let z = (this.__version >= 755) ? packet.readUInt8() : 1;
 
       // Next three bytes are x, y, z patterns
       frameGroup.setPattern(x, y, z);
@@ -288,7 +289,7 @@ ObjectBuffer.prototype.__load = function(name, buffer) {
       frameGroup.setAnimationLength(packet.readUInt8());
 
       // These are frame durations: read them!
-      if(frameGroup.isAnimated() && this.__version > 740) {
+      if(frameGroup.isAnimated() && this.__version >= 1050) {
 
         let animationLengths = new Array();
 
@@ -307,7 +308,7 @@ ObjectBuffer.prototype.__load = function(name, buffer) {
 
       // Read all the sprite identifiers
       for(let i = 0; i < frameGroup.getNumberSprites(); i++) {
-		frameGroup.sprites.push(this.__version > 740 ? packet.readUInt32() : packet.readUInt16());
+		frameGroup.sprites.push(this.__version >= 960 ? packet.readUInt32() : packet.readUInt16());
       }
 
       dataObject.frameGroups.push(frameGroup);
@@ -377,6 +378,9 @@ ObjectBuffer.prototype.__mapVersionFlag = function(flag) {
     } else if(flag > 16) {
       return flag - 1;	
     }
+
+  } else if(this.__version >= 755) {
+    return flag === 23 ? this.attributes.ThingAttrFloorChange : flag;
 
   } else if(this.__version >= 740) {
 
@@ -558,8 +562,9 @@ ObjectBuffer.prototype.__readFlags = function(packet) {
 
       case this.attributes.ThingAttrDisplacement: {
         flags.set(PropBitFlag.prototype.flags.DatFlagDisplacement);
+        properties.displacement = { x: 8, y: 8 };
         if(this.__version >= 755) {
-          packet.readLight();
+          properties.displacement = { x: packet.readUInt16(), y: packet.readUInt16() };
         }
         break;
       }

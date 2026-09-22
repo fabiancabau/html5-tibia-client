@@ -1,0 +1,479 @@
+:root {
+  color-scheme: dark;
+  --bg: #141a1b;
+  --panel: #222a2a;
+  --edge: #3c4946;
+  --gold: #dfb971;
+  --text: #e2e5db;
+  --muted: #9faea8;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, #293a34, var(--bg) 60%);
+  color: var(--text);
+  font:
+    14px/1.5 system-ui,
+    sans-serif;
+  min-height: 100vh;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--edge);
+  background: #141b19dd;
+}
+header > div {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+header strong {
+  font:
+    700 25px Georgia,
+    serif;
+  color: var(--gold);
+}
+.crest {
+  font: 700 23px Georgia;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 0 9px;
+  border-radius: 3px;
+}
+.subtitle {
+  font-size: 12px;
+  color: var(--muted);
+}
+#connection {
+  color: var(--muted);
+  font-size: 12px;
+}
+main {
+  max-width: 1260px;
+  margin: 24px auto;
+  padding: 0 20px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 14px;
+  box-shadow: 0 3px 12px #0002;
+}
+#welcome {
+  max-width: 580px;
+  margin: 7vh auto;
+  padding: 38px 44px;
+  background: linear-gradient(145deg, #2c3c33, #202827);
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--gold);
+}
+h1 {
+  font:
+    42px/1.15 Georgia,
+    serif;
+  margin: 20px 0;
+}
+h2 {
+  font-size: 13px;
+  margin: 0 0 10px;
+  color: var(--gold);
+}
+p {
+  color: var(--muted);
+}
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+input:not([type="checkbox"]):not([type="file"]),
+select,
+textarea {
+  background: #151e1c;
+  color: var(--text);
+  border: 1px solid #48534f;
+  border-radius: 4px;
+  padding: 9px;
+  min-width: 0;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 1px solid var(--gold);
+}
+button {
+  cursor: pointer;
+  border: 1px solid #4d5c55;
+  background: #35443b;
+  color: var(--text);
+  border-radius: 4px;
+  padding: 7px 12px;
+}
+button:hover {
+  background: #435947;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.primary {
+  background: var(--gold);
+  color: #29281f;
+  border-color: var(--gold);
+  font-weight: 600;
+}
+.primary:hover {
+  background: #f0ca81;
+}
+#login-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 24px 0 15px;
+}
+#login-form input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+}
+#login-form button {
+  grid-column: span 2;
+  padding: 12px;
+}
+#status {
+  font-size: 13px;
+}
+summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+}
+.controls {
+  color: #92a49a;
+  font-size: 11px;
+  margin-top: 15px;
+}
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 234px;
+  gap: 16px;
+}
+.world-frame {
+  position: relative;
+  border: 5px ridge #526051;
+  border-radius: 3px;
+  background: #0c100d;
+  overflow: hidden;
+}
+#screen {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+  outline: none;
+  aspect-ratio: 15/11;
+}
+#notice {
+  position: absolute;
+  bottom: 25px;
+  left: 10px;
+  right: 10px;
+  text-align: center;
+  color: #f3d383;
+  text-shadow: 1px 1px 2px #000;
+  pointer-events: none;
+  white-space: pre-line;
+}
+.chat {
+  margin-top: 12px;
+  padding: 10px;
+}
+.chat-heading {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--gold);
+}
+#coordinates {
+  color: var(--muted);
+}
+#messages {
+  height: 124px;
+  overflow: auto;
+  font: 12px/1.5 monospace;
+  padding: 5px 0;
+  color: #d6dabd;
+}
+#messages > div {
+  overflow-wrap: anywhere;
+}
+#chat-form {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+}
+#chat-input {
+  flex: 1;
+}
+#chat-form input,
+#chat-form select {
+  padding: 6px;
+}
+aside {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+aside .panel {
+  padding: 12px;
+}
+.bar {
+  height: 19px;
+  position: relative;
+  background: #121715;
+  border: 1px solid #4e5650;
+  margin: 6px 0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bar span {
+  position: absolute;
+  height: 100%;
+  width: 0;
+  background: #975351;
+}
+.bar.mana span {
+  background: #4c68a0;
+}
+.bar b {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  font: 11px/17px monospace;
+  text-shadow: 1px 1px #000;
+}
+#stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 10px;
+  margin: 9px 0;
+  font-size: 11px;
+  color: #bbc7bd;
+}
+#skills {
+  font-size: 11px;
+}
+#inventory {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+.slot {
+  position: relative;
+  background: #151e1c;
+  border: 1px solid #4b574e;
+  min-height: 51px;
+  border-radius: 3px;
+  text-align: center;
+  padding: 2px;
+}
+.slot canvas {
+  display: block;
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+  margin: 0 auto;
+}
+.slot span {
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  font-size: 9px;
+  color: #9aa79e;
+  pointer-events: none;
+}
+.slot small {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  color: #eee;
+}
+.fight {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fight select {
+  font-size: 11px;
+  padding: 4px;
+}
+.fight label {
+  font-size: 11px;
+}
+#battle button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 3px;
+  font-size: 12px;
+  padding: 4px 7px;
+}
+#battle button.target {
+  border-color: #df685c;
+  color: #f2c1b6;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.actions button,
+#stop-attack {
+  font-size: 11px;
+}
+.container-items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+.container-items .slot {
+  min-height: 39px;
+}
+.container-items .slot canvas {
+  width: 32px;
+  height: 32px;
+}
+.container-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.container-heading h2 {
+  margin: 0;
+}
+.container-heading button {
+  padding: 0 6px;
+}
+.character {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  text-align: left;
+}
+#context-menu {
+  position: fixed;
+  background: #27372d;
+  border: 1px solid var(--gold);
+  padding: 4px;
+  z-index: 10;
+  min-width: 140px;
+  box-shadow: 0 5px 20px #0008;
+}
+#context-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 6px;
+}
+#context-menu button:hover {
+  background: #3e5142;
+}
+dialog {
+  width: 410px;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+}
+dialog::backdrop {
+  background: #0008;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+dialog textarea {
+  width: 100%;
+  height: 170px;
+}
+dialog label {
+  margin: 8px 0;
+}
+dialog input {
+  width: 100%;
+}
+footer {
+  text-align: center;
+  color: #657a6e;
+  font-size: 11px;
+  padding: 12px;
+}
+#character-list button {
+  padding: 12px;
+}
+.error {
+  color: #f0a398 !important;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 800px) {
+  header {
+    padding: 10px;
+  }
+  .subtitle {
+    display: none;
+  }
+  main {
+    padding: 0 8px;
+  }
+  .game-layout {
+    grid-template-columns: minmax(0, 1fr) 190px;
+    gap: 8px;
+  }
+  #welcome {
+    padding: 24px;
+  }
+  header button {
+    padding: 5px;
+    font-size: 11px;
+  }
+}
+@media (max-width: 580px) {
+  .game-layout {
+    display: block;
+  }
+  aside {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 12px;
+  }
+  h1 {
+    font-size: 34px;
+  }
+  #login-form {
+    grid-template-columns: 1fr;
+  }
+  #login-form button {
+    grid-column: auto;
+  }
+}
