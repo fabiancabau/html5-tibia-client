@@ -9,7 +9,9 @@
     "test:advanced": "node tests/advanced.mjs",
     "test:social": "node tests/social.mjs",
     "test:hud": "node tests/hud.mjs",
-    "test:movement": "node tests/movement-live.mjs"
+    "test:movement": "node tests/movement-live.mjs",
+    "test:hunts": "node tests/hunts-live.mjs",
+    "test:hunts-isolation": "node tests/hunts-isolation.mjs"
   },
   "engines": {
     "node": ">=20"

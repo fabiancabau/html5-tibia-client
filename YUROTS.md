@@ -38,3 +38,9 @@ The live tests require the sample YurOTS data pack and local 7.6 assets. `TEST_A
 Scope: YurOTS protocol 760, one configured game server, original 7.6 assets. New account registration stays with YurOTS's existing account maker. The upstream Forby HTTP/token login and custom game protocol are not used in this mode.
 
 The HUD suite defaults to Yurez The Next. Use `TEST_ACCOUNT`, `TEST_PASSWORD` and `TEST_CHARACTER` to select a separate test character that can safely log out; the suite casts `exura` and walks nearby.
+
+## Private auto-hunts
+
+The crossed-swords **Organize hunt** toolbar button opens a searchable, favoritable catalog of the server's spawn areas. Select an area, pull size and auto-loot preference to start a private party hunt. The server owns movement, combat, healing, respawns, loot and safe return. Pause/Resume and Leave hunt are available above the hotbar; manual movement also pauses automation.
+
+`npm run test:hunts` covers the live single-player flow; `TEST_RESPAWN=1` includes a full configured respawn cycle. `npm run test:hunts-isolation` exercises party ownership, outsider rejection, autosave return coordinates and cleanup using a disposable sample world.

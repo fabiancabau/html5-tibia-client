@@ -510,6 +510,17 @@ export class HunteraHUD {
   }
 
   session(protocol = this.protocol) {
+    if (protocol?.huntState?.active) {
+      const hunt = protocol.huntState;
+      return {
+        elapsedSeconds: hunt.seconds,
+        experienceGained: hunt.experience,
+        experiencePerHour:
+          hunt.seconds > 0
+            ? Math.round((hunt.experience * 3600) / hunt.seconds)
+            : null,
+      };
+    }
     const elapsedSeconds = this.active
       ? Math.max(0, Math.floor((performance.now() - this.startedAt) / 1000))
       : 0;

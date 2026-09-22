@@ -32,6 +32,7 @@ export class Protocol76 {
     this.packets = 0;
     this.opcodes = new Set();
     this.pendingMove = false;
+    this.huntState = { active: false };
   }
   get player() {
     return this.creatures.get(this.playerId);
@@ -149,6 +150,14 @@ export class Protocol76 {
         op = r.u8();
       this.opcodes.add(op);
       switch (op) {
+        case 0xf0: {
+          const version = r.u8();
+          if (version !== 1) throw new Error("Unknown hunt message version");
+          const data = JSON.parse(r.string());
+          if (data.event === "state") this.huntState = data;
+          this.emit("hunt", data);
+          break;
+        }
         case 0x0a:
           this.playerId = r.u32();
           this.beat = r.u16();
@@ -261,8 +270,11 @@ export class Protocol76 {
             from,
             to,
             start: performance.now(),
-            duration: stepDuration(this.assets, this.tiles.get(key(to)), thing.speed) *
-              (thing.id === this.playerId && to.x !== from.x && to.y !== from.y ? 2 : 1),
+            duration:
+              stepDuration(this.assets, this.tiles.get(key(to)), thing.speed) *
+              (thing.id === this.playerId && to.x !== from.x && to.y !== from.y
+                ? 2
+                : 1),
           };
           this.insert(to, thing);
           if (thing.id === this.playerId) {

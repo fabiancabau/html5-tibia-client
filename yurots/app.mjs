@@ -3,6 +3,7 @@ import { Protocol76, key, moves } from "./protocol76.mjs";
 import { Writer, loginPacket, gamePacket, readLogin } from "./bytes.mjs";
 import { Renderer76 } from "./renderer.mjs";
 import { HunteraHUD } from "./hud.mjs";
+import { HuntUI } from "./hunts.mjs";
 import { MovementController, deltas, stepDuration } from "./movement.mjs";
 const $ = (id) => document.getElementById(id),
   assets = new Assets76(),
@@ -28,10 +29,15 @@ const movement = new MovementController({
   position: () => protocol?.position,
   canStep: (direction, from) => {
     const [dx, dy] = deltas[direction];
-    const tile = protocol.tiles.get(key({ x: from.x + dx, y: from.y + dy, z: from.z }));
+    const tile = protocol.tiles.get(
+      key({ x: from.x + dx, y: from.y + dy, z: from.z }),
+    );
     // Unknown/empty tiles may be a floor transition; let the server decide.
-    return !tile?.things.some((thing) =>
-      thing.kind === "creature" || assets.flag(thing.id, "DatFlagNotWalkable"));
+    return !tile?.things.some(
+      (thing) =>
+        thing.kind === "creature" ||
+        assets.flag(thing.id, "DatFlagNotWalkable"),
+    );
   },
   send: (direction) => {
     if (!ready || socket?.readyState !== WebSocket.OPEN) return false;
@@ -39,6 +45,14 @@ const movement = new MovementController({
     protocol.pendingMove = true;
     return true;
   },
+});
+const huntUI = new HuntUI({
+  assets,
+  send,
+  notice,
+  getProtocol: () => (ready ? protocol : null),
+  stopInput: () => movement.reset(),
+  focusGame: () => $("screen").focus(),
 });
 let tradeOffers = {},
   suppressNextClick = false;
@@ -117,6 +131,7 @@ function showLogin() {
   ready = false;
   document.body.classList.remove("in-game");
   hud.disconnect();
+  huntUI.reset();
   movement.reset();
   useSource = null;
   $("welcome").hidden = false;
@@ -273,6 +288,9 @@ function connect(name) {
 }
 function onEvent(type, data) {
   switch (type) {
+    case "hunt":
+      huntUI.handle(data);
+      break;
     case "send":
       send(data);
       break;
@@ -286,6 +304,7 @@ function onEvent(type, data) {
       confirmMovement();
       movement.clearPath();
       ready = true;
+      huntUI.connected();
       document.body.classList.add("in-game");
       hud.startSession(protocol);
       $("welcome").hidden = true;
@@ -808,7 +827,11 @@ function confirmMovement() {
   const direction = movement.pending?.direction;
   if (!direction) return;
   const [dx, dy] = deltas[direction];
-  const duration = stepDuration(assets, protocol.tiles.get(key(protocol.position)), protocol.player?.speed);
+  const duration = stepDuration(
+    assets,
+    protocol.tiles.get(key(protocol.position)),
+    protocol.player?.speed,
+  );
   movement.confirm(duration * (dx && dy ? 2 : 1));
 }
 function step() {
@@ -1056,6 +1079,7 @@ window.render_game_to_text = () =>
     assets: assets.loaded,
     viewport: renderer.view,
     hud: hud.state(),
+    hunt: huntUI.state(),
     coordinates: "x east, y south, z down; tiles use server coordinates",
     player: protocol?.player
       ? {
@@ -1097,6 +1121,7 @@ window.yurots = {
   assets,
   renderer,
   hud,
+  huntUI,
   send,
   look,
   use,
