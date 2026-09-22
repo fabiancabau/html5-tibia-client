@@ -3,6 +3,7 @@ import { Protocol76, key, moves } from "./protocol76.mjs";
 import { Writer, loginPacket, gamePacket, readLogin } from "./bytes.mjs";
 import { Renderer76 } from "./renderer.mjs";
 import { HunteraHUD } from "./hud.mjs";
+import { MovementController, deltas, stepDuration } from "./movement.mjs";
 const $ = (id) => document.getElementById(id),
   assets = new Assets76(),
   renderer = new Renderer76($("screen"), assets);
@@ -13,8 +14,6 @@ let protocol = null,
   useSource = null,
   tradeSource = null,
   dragSource = null,
-  path = [],
-  movementAt = 0,
   noticeTimer;
 const hud = new HunteraHUD({
   assets,
@@ -23,9 +22,24 @@ const hud = new HunteraHUD({
   getProtocol: () => (ready ? protocol : null),
   focusGame: () => $("screen").focus(),
 });
-const held = new Set(),
-  messages = [],
+const messages = [],
   errors = [];
+const movement = new MovementController({
+  position: () => protocol?.position,
+  canStep: (direction, from) => {
+    const [dx, dy] = deltas[direction];
+    const tile = protocol.tiles.get(key({ x: from.x + dx, y: from.y + dy, z: from.z }));
+    // Unknown/empty tiles may be a floor transition; let the server decide.
+    return !tile?.things.some((thing) =>
+      thing.kind === "creature" || assets.flag(thing.id, "DatFlagNotWalkable"));
+  },
+  send: (direction) => {
+    if (!ready || socket?.readyState !== WebSocket.OPEN) return false;
+    send(new Writer(moves[direction]));
+    protocol.pendingMove = true;
+    return true;
+  },
+});
 let tradeOffers = {},
   suppressNextClick = false;
 const dirs = {
@@ -41,16 +55,6 @@ const dirs = {
   Numpad9: "northeast",
   Numpad3: "southeast",
   Numpad1: "southwest",
-};
-const deltas = {
-  north: [0, -1],
-  east: [1, 0],
-  south: [0, 1],
-  west: [-1, 0],
-  northeast: [1, -1],
-  southeast: [1, 1],
-  southwest: [-1, 1],
-  northwest: [-1, -1],
 };
 function status(text, error = false) {
   $("status").textContent = text;
@@ -106,16 +110,14 @@ function fail(error) {
   notice(text);
   log(text);
   console.error(error);
-  path = [];
-  held.clear();
+  movement.reset();
   socket?.close();
 }
 function showLogin() {
   ready = false;
   document.body.classList.remove("in-game");
   hud.disconnect();
-  held.clear();
-  path = [];
+  movement.reset();
   useSource = null;
   $("welcome").hidden = false;
   $("game").hidden = true;
@@ -233,7 +235,7 @@ function connect(name) {
   errors.length = 0;
   messages.length = 0;
   $("messages").replaceChildren();
-  path = [];
+  movement.reset();
   const current = new WebSocket(wsUrl("/game"));
   socket = current;
   current.binaryType = "arraybuffer";
@@ -281,6 +283,8 @@ function onEvent(type, data) {
       socket?.close();
       break;
     case "map":
+      confirmMovement();
+      movement.clearPath();
       ready = true;
       document.body.classList.add("in-game");
       hud.startSession(protocol);
@@ -298,11 +302,13 @@ function onEvent(type, data) {
     case "death":
       notice("You are dead. Log out and reconnect to return to the temple.");
       log("You are dead.");
-      held.clear();
-      path = [];
+      movement.stop();
+      break;
+    case "move":
+      confirmMovement();
       break;
     case "cancelWalk":
-      path = [];
+      movement.reject();
       break;
     case "effect":
       renderer.effects.push(data);
@@ -710,14 +716,14 @@ $("screen").onclick = (e) => {
     );
   } else if (useSource && ref) useWith(ref);
   else if (e.shiftKey && ref) look(ref);
-  else path = findPath(p);
+  else movement.followPath(() => findPath(p));
   $("screen").focus();
 };
 $("screen").ondblclick = (e) => {
   const p = eventPosition(e),
     ref = p && topRef(p);
   if (ref) {
-    path = [];
+    movement.stop();
     use(ref);
   }
 };
@@ -798,24 +804,15 @@ function findPath(target) {
   notice("There is no way.");
   return [];
 }
-function step() {
-  if (
-    !ready ||
-    !socket ||
-    protocol.pendingMove ||
-    performance.now() < movementAt
-  )
-    return;
-  const direction = [...held].map((k) => dirs[k]).find(Boolean) || path.shift();
+function confirmMovement() {
+  const direction = movement.pending?.direction;
   if (!direction) return;
-  send(new Writer(moves[direction]));
-  protocol.pendingMove = true;
-  movementAt =
-    performance.now() + Math.max(80, 100000 / (protocol.player?.speed || 220));
-  const p = protocol;
-  setTimeout(() => {
-    if (protocol === p) protocol.pendingMove = false;
-  }, 1000);
+  const [dx, dy] = deltas[direction];
+  const duration = stepDuration(assets, protocol.tiles.get(key(protocol.position)), protocol.player?.speed);
+  movement.confirm(duration * (dx && dy ? 2 : 1));
+}
+function step() {
+  if (ready) movement.tick();
 }
 document.addEventListener("keydown", (e) => {
   if (hud.isTyping(e.target)) return;
@@ -828,12 +825,12 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (e.key === "Escape") {
-    path = [];
+    if (e.repeat) return;
+    movement.stop(ready);
     useSource = null;
     tradeSource = null;
-    held.clear();
     protocol && (protocol.target = 0);
-    send(new Writer(0xa1).u32(0));
+    if (ready) send(new Writer(0xbe));
     return;
   }
   if (e.key.toLowerCase() === "f") {
@@ -843,19 +840,23 @@ document.addEventListener("keydown", (e) => {
   }
   if (!ready || !dirs[e.code]) return;
   e.preventDefault();
-  path = [];
   if (e.ctrlKey) {
+    movement.stop();
     const d = ["north", "east", "south", "west"].indexOf(dirs[e.code]);
     if (d >= 0) send(new Writer(0x6f + d));
     return;
   }
-  held.add(e.code);
+  if (e.repeat) return;
+  movement.press(e.code, dirs[e.code]);
   step();
 });
-document.addEventListener("keyup", (e) => held.delete(e.code));
-window.addEventListener("blur", () => held.clear());
+document.addEventListener("keyup", (e) => movement.release(e.code));
+window.addEventListener("blur", () => movement.stop());
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) movement.stop();
+});
 document.addEventListener("focusin", (event) => {
-  if (hud.isTyping(event.target)) held.clear();
+  if (hud.isTyping(event.target)) movement.clearInput();
 });
 $("chat-form").onsubmit = (e) => {
   e.preventDefault();
@@ -893,8 +894,7 @@ $("chat-form").onsubmit = (e) => {
 };
 $("logout").onclick = () => {
   send(new Writer(0x14));
-  held.clear();
-  path = [];
+  movement.stop();
 };
 $("stop-attack").onclick = () => {
   protocol.target = 0;
@@ -1078,6 +1078,12 @@ window.render_game_to_text = () =>
     messages: messages.slice(-5),
     errors,
     packets: protocol?.packets || 0,
+    movement: {
+      pending: movement.pending?.direction || null,
+      buffered: movement.buffered,
+      held: [...movement.held.values()],
+      pathLength: movement.path.length,
+    },
   });
 // This server is authoritative. Await real network time instead of simulating server state.
 window.advanceTime = async (ms) => {
@@ -1098,7 +1104,7 @@ window.yurots = {
   findPath,
 };
 function loop() {
-  if (hud.isTyping()) held.clear();
+  if (hud.isTyping()) movement.clearInput();
   step();
   hud.tick();
   renderer.render(protocol);

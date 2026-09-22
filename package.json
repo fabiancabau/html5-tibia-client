@@ -8,7 +8,8 @@
     "test:live": "node tests/live.mjs",
     "test:advanced": "node tests/advanced.mjs",
     "test:social": "node tests/social.mjs",
-    "test:hud": "node tests/hud.mjs"
+    "test:hud": "node tests/hud.mjs",
+    "test:movement": "node tests/movement-live.mjs"
   },
   "engines": {
     "node": ">=20"

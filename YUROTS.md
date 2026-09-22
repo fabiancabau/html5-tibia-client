@@ -33,6 +33,8 @@ CLIENT_URL=http://127.0.0.1:8080 npm run test:hud  # HUD, hotkeys, persistence, 
 
 The live tests require the sample YurOTS data pack and local 7.6 assets. `TEST_ACCOUNT`, `TEST_PASSWORD`, `TEST_CHARACTER`, and `CLIENT_URL` customize the basic browser test. Screenshots and JSON state go to `artifacts/`.
 
+`npm run test:movement` covers wall recovery, diagonal pacing, native path cancellation, quick turns, overlapping keys, Escape, click-to-walk interruption, and delayed server replies. Run it against a disposable copy of the sample world with a normal test character at the temple (160,54,7), using `CLIENT_URL` to select that world's gateway (default port 8082). It deliberately sends raw wall-collision packets to check server cooldowns as well as browser controls; artifacts go to `artifacts/movement/`.
+
 Scope: YurOTS protocol 760, one configured game server, original 7.6 assets. New account registration stays with YurOTS's existing account maker. The upstream Forby HTTP/token login and custom game protocol are not used in this mode.
 
 The HUD suite defaults to Yurez The Next. Use `TEST_ACCOUNT`, `TEST_PASSWORD` and `TEST_CHARACTER` to select a separate test character that can safely log out; the suite casts `exura` and walks nearby.

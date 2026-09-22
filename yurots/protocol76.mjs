@@ -1,4 +1,5 @@
 import { Reader, Writer } from "./bytes.mjs";
+import { stepDuration } from "./movement.mjs";
 export const key = (p) => `${p.x},${p.y},${p.z}`;
 export const equal = (a, b) =>
   a && b && a.x === b.x && a.y === b.y && a.z === b.z;
@@ -260,7 +261,8 @@ export class Protocol76 {
             from,
             to,
             start: performance.now(),
-            duration: Math.max(60, Math.min(1000, 100000 / thing.speed)),
+            duration: stepDuration(this.assets, this.tiles.get(key(to)), thing.speed) *
+              (thing.id === this.playerId && to.x !== from.x && to.y !== from.y ? 2 : 1),
           };
           this.insert(to, thing);
           if (thing.id === this.playerId) {
